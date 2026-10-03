@@ -2,6 +2,11 @@
 
 source "https://rubygems.org"
 gemspec
+if ENV["GRITZ_RELEASE"] == "1"
+  # The attestation hook loads Ruby's default OpenSSL before Bundler.
+  default_openssl = Gem::Specification.find_all_by_name("openssl").find(&:default_gem?)
+  gem "openssl", default_openssl.version.to_s
+end
 unless ENV["GRITZ_RELEASE"] == "1"
   gem "gritz-core", git: "https://github.com/gritzrpc/gritz-core.git", branch: "main"
 end

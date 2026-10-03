@@ -42,6 +42,7 @@ jobs:
           bundle exec rubocop
           bundle exec rake build
       - name: Publish through RubyGems trusted publishing
+        # release-gem preloads RubyGems (and default OpenSSL) before Bundler.
         uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
       - name: Create GitHub release
         env:

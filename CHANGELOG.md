@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.1
+## 0.1.2
 
 - Use gritz-core 0.6.1 to avoid formatting suppressed RPC completion logs.
 
