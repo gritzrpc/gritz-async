@@ -9,16 +9,14 @@ module Gritz
       # @api private
       class Server
         class Connection < ::Async::HTTP::Protocol::HTTP2::Server
+          attr_reader :last_stream_id
+
           def drain!
             @last_stream_id = remote_stream_id
             frame = Protocol::HTTP2::GoawayFrame.new
             frame.pack(@last_stream_id, 0, "")
             # Upstream send_goaway also closes the reader, losing active responses.
             write_frame(frame)
-          end
-
-          def ignore_frame?(frame)
-            super || (@last_stream_id && valid_remote_stream_id?(frame.stream_id) && frame.stream_id > @last_stream_id)
           end
         end
 
@@ -44,11 +42,20 @@ module Gritz
         def accept(peer, _address)
           connection = Connection.new(::IO::Stream(peer))
           connection.read_connection_preface(::Async::HTTP::Protocol::HTTP2::SERVER_SETTINGS)
+          connection.drain! if @stopping
           connection.start_connection
           @connections[connection] = true
           connection.each do |request|
             request.scheme ||= "http"
             request.extend(ResponseLifecycle)
+            next if request.stream.closed?
+
+            if connection.last_stream_id && request.stream.id > connection.last_stream_id
+              # Decode frames normally to retain HPACK and flow-control state.
+              request.stream.send_reset_stream(Protocol::HTTP2::REFUSED_STREAM)
+              next
+            end
+
             @app.call(request)
           end
         rescue IOError, SystemCallError, Protocol::HTTP2::Error => e
@@ -59,6 +66,7 @@ module Gritz
         end
 
         def stop(deadline:)
+          @stopping = true
           @connections.keys.each do |connection| # rubocop:disable Style/HashEachMethods -- IO can yield while other connections change.
             connection.drain! unless connection.closed?
           rescue IOError, SystemCallError, Protocol::HTTP2::Error

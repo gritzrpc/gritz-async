@@ -9,16 +9,16 @@ Date: 2026-10-03. Local environment: Linux ARM64, CRuby 3.4.11, Docker image `gr
 | gritz 0.6.0 | 12 | 0 | 100% |
 | gritz-otel 0.3.0 | 33 | 0 | 98.11% |
 | gritz-rails 0.2.0 | 18 | 0 | 93.88% |
-| gritz-async 0.1.0 | 31 | 0 | 98.35% |
-| Total | 419 | 0 | — |
+| gritz-async 0.1.0 | 33 | 0 | 97.73% |
+| Total | 421 | 0 | — |
 
 Each suite ran with `COVERAGE=1 bundle exec rspec`. Core excludes shared RSpec example definitions from its production coverage calculation; both adapters execute those definitions over real sockets. All six repositories passed RuboCop and `gem build --strict`. The combined dependency lock passed bundler-audit against ruby-advisory-db updated on 2026-10-02 (1,252 advisories).
 
 Both Native and Async passed the same 14 TransportContract examples: four RPC forms, ordered output, output before half-close/controller completion, binary and repeated metadata, separate headers and trailers, rich error details, late streaming status, safe internal errors, unimplemented actions, deadline, cancellation, complete in-flight response during graceful shutdown and bounded forced shutdown.
 
-Additional Async checks establish one reactor thread with isolated concurrent RPC fibers, overload rejection and final inflight cleanup, bounded wire and decompressed messages, outbound size and metadata limits, invalid compressed input rejection, early unary headers and cancellation cleanup that retains the client connection for another RPC. Pure service definitions and a fresh master boot without loading the official grpc extension.
+Additional Async checks establish one reactor thread with isolated concurrent RPC fibers, overload rejection and final inflight cleanup, bounded wire and decompressed messages, outbound size and metadata limits, invalid compressed input rejection, early unary headers and cancellation cleanup that retains the client connection for another RPC. Pure service definitions and a fresh master boot without loading the official grpc extension. A runtime-only bundle contains 30 gems and excludes grpc, gritz-native and the gritz meta gem. An encoded HTTP/2 frame race checks HPACK synchronization for accepted-stream trailers during draining.
 
-A real inherited-listener cluster ran two workers on one ephemeral port. It replaced a SIGKILLed worker, resized through three and two workers, replaced every worker with USR1 and started a fresh master with USR2. The TCP port remained unchanged, retired generations were reaped and RPCs reached the new workers. Core independently verifies listener ownership across fresh generations and that the port is released at shutdown.
+A real inherited-listener cluster ran two workers on one ephemeral port. It replaced a SIGKILLed worker, resized through three and two workers, replaced every worker with USR1 and started a fresh master with USR2. A separate request-count recycling check replaced a worker on the inherited ephemeral listener. The TCP port remained unchanged, retired generations were reaped and RPCs reached the new workers. Core independently verifies listener ownership across fresh generations and that the port is released at shutdown.
 
 The included hello application's four methods also passed grpcurl 1.9.4: unary returned `Hello, Ruby`; server streaming returned `Ruby:0`, `Ruby:1`, `Ruby:2`; a two-message client stream returned count 2; bidi echoed both messages. The grpcurl release archive matched its upstream checksum. The caller used the supplied .proto file, without Reflection.
 
