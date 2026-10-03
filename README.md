@@ -7,10 +7,10 @@ The runtime depends on `gritz-core`, `async-grpc` and their protobuf/HTTP depend
 ## Install
 
 ```ruby
-gem "gritz-async", "~> 0.1.0"
+gem "gritz-async", "~> 0.1.4"
 ```
 
-Until the initial release, use `gem "gritz-async", git: "https://github.com/gritzrpc/gritz-async.git", branch: "main"`. Core 0.6.0 must be available. See [release instructions](docs/guides/releasing.md).
+The 0.1.4 release requires Core 0.9.0. Earlier 0.1 releases support Core 0.6. See [release instructions](docs/guides/releasing.md).
 
 ## Quick start
 
@@ -62,11 +62,13 @@ Incoming frames, decompressed payloads, serialized replies and request metadata 
 
 ## Initial release limits
 
+Continuous-load phased restart recorded one UNAVAILABLE response; the zero-error target remains unmet. See the [accepted limitation and remedy](docs/adr/phased-restart-limit.md). This adapter remains outside the stable 1.0 support contract.
+
 This experimental release serves plaintext HTTP/2 gRPC. TLS/mTLS, gRPC Health and Reflection are not implemented; TLS and Reflection configuration fails before binding. Use a TLS-terminating gRPC proxy and Gritz's HTTP readiness endpoint when needed.
 
 Native connection-age and keepalive settings do not apply to this adapter. Their shared defaults remain unchanged; changing them raises a configuration error. `fork_mode :grpc_fork_support` and Native client factories require `gritz-native`. Async applications can use `Async::GRPC::Client` for outbound calls.
 
-For Rails, select the Async transport before `rails_app`; gritz-rails 0.2.0 sets `ActiveSupport::IsolatedExecutionState.isolation_level = :fiber`. Use a scheduler-aware database driver and a suitable connection pool. gritz-otel 0.3.0 supports server tracing in isolated RPC fibers.
+For Rails, select the Async transport before `rails_app`; gritz-rails 0.9.0 sets `ActiveSupport::IsolatedExecutionState.isolation_level = :fiber`. Use a scheduler-aware database driver and a suitable connection pool. gritz-otel 0.9.0 supports server tracing in isolated RPC fibers.
 
 ## Development
 
@@ -80,7 +82,11 @@ bundle exec rake build
 
 CI runs Ruby 3.3, 3.4 and 4.0. The shared `Gritz::Testing::TransportContract` uses the official grpc client solely as a development dependency, verifying all four RPC forms, metadata, errors, deadlines, cancellation and graceful shutdown. Tests also run a C-core-free cluster through worker kill, resizing, phased replacement and fresh master replacement. See the [validation report](docs/reports/async-validation.md) and [upstream integration decisions](docs/adr/async-transport.md).
 
-`pkg/gritz-async.gem` is the strict-built release package. Initial publication and Trusted Publishing setup are performed by the project owner. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [release guide](docs/guides/releasing.md).
+`pkg/gritz-async.gem` is the strict-built release package. Publication uses the configured Trusted Publishing workflow. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [release guide](docs/guides/releasing.md).
+
+## Documentation
+
+Read the [published guides and API reference](https://gritzrpc.github.io/gritz/), [public API policy](https://github.com/gritzrpc/gritz/blob/main/docs/public-api.md), [support policy](https://github.com/gritzrpc/gritz/blob/main/docs/support-policy.md) and [stabilization gate](https://github.com/gritzrpc/gritz/blob/main/docs/stabilization.md).
 
 ## License
 
