@@ -41,6 +41,10 @@ jobs:
           bundle exec rake
           bundle exec rubocop
           bundle exec rake build
+      - name: Verify release preloading and dependencies
+        run: |
+          ruby -rrubygems/commands/push_command -rbundler/setup -e 'require "rake"'
+          bundle exec bundler-audit check --update
       - name: Publish through RubyGems trusted publishing
         # release-gem preloads RubyGems (and default OpenSSL) before Bundler.
         uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
