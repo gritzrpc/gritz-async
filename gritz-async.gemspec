@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "async-grpc", "~> 0.10.0"
   spec.add_dependency "async-http", "~> 0.105.0"
   spec.add_dependency "googleapis-common-protos-types", ">= 1.20", "< 2"
-  spec.add_dependency "gritz-core", "= 0.6.0"
+  spec.add_dependency "gritz-core", "= 0.6.1"
   spec.add_dependency "protocol-grpc", "~> 0.17.0"
   spec.add_dependency "protocol-http2", "~> 0.29.1"
 end
